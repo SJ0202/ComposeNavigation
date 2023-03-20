@@ -50,7 +50,8 @@ fun Navigation(
 
             SecondScreen(
                 navController = navController,
-                testModel = testModel
+                testModel = testModel,
+                activityFinish = activityFinish
             )
         }
         composable(
@@ -76,8 +77,7 @@ fun Navigation(
 
             ThirdScreen(
                 navController = navController,
-                testModel = testModel,
-                activityFinish = activityFinish
+                testModel = testModel
             )
         }
     }

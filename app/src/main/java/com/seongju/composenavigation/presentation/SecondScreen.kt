@@ -2,9 +2,7 @@ package com.seongju.composenavigation.presentation
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
@@ -16,29 +14,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavHostController
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.seongju.composenavigation.domain.model.TestModel
+import com.seongju.composenavigation.presentation.components.StandardButton
 import com.seongju.composenavigation.presentation.util.Screen
+import com.seongju.composenavigation.ui.theme.SpaceDefault
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SecondScreen(
-    navController: NavHostController,
-    testModel: TestModel?
+    navController: NavController,
+    testModel: TestModel?,
+    activityFinish: () -> Unit
 ) {
     val localContext = LocalContext.current
     val waitTime = remember { mutableStateOf<Long>(0L) }
 
+
+
     BackHandler(enabled = true) {
         if (System.currentTimeMillis() - waitTime.value >= 1500) {
             waitTime.value = System.currentTimeMillis()
-            Toast.makeText(localContext, "뒤로가기 버튼을 한번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(localContext, "뒤로가기 버튼을 한번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
         } else {
-            navController.popBackStack(
-                route = Screen.FirstScreen.route,
-                inclusive = false
-            )
+            activityFinish()
         }
     }
 
@@ -51,10 +52,12 @@ fun SecondScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            navController.popBackStack(
-                                route = Screen.FirstScreen.route,
-                                inclusive = false
-                            )
+                            if (System.currentTimeMillis() - waitTime.value >= 1500) {
+                                waitTime.value = System.currentTimeMillis()
+                                Toast.makeText(localContext, "뒤로가기 버튼을 한번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                activityFinish()
+                            }
                         }
                     ) {
                         Icon(
@@ -77,7 +80,8 @@ fun SecondScreen(
         ) {
             if (testModel != null) {
                 SecondScreenBody(
-                    testModel = testModel
+                    testModel = testModel,
+                    navController = navController
                 )
             } else {
                 CircularProgressIndicator()
@@ -88,9 +92,44 @@ fun SecondScreen(
 
 @Composable
 fun SecondScreenBody(
-    testModel: TestModel
+    testModel: TestModel,
+    navController: NavController
 ) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(SpaceDefault)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "이름: ${testModel.name}",
+                fontSize = 24.sp
+            )
+            Spacer(
+                modifier = Modifier
+                    .height(SpaceDefault)
+            )
+            Text(
+                text = "나이: ${testModel.age}",
+                fontSize = 24.sp
+            )
+        }
+        StandardButton(
+            buttonText = "다음"
+        ) {
+            navController.navigate(
+                Screen.ThirdScreen.passTestModel(
+                    testModel = testModel
+                )
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -108,5 +147,7 @@ fun SecondScreenPreview(
     SecondScreen(
         navController = navController,
         testModel = testModel
-    )
+    ) {
+
+    }
 }
